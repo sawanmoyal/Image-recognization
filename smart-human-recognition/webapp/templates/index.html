@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Human Activity Recognition System</title>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1e2a3a;
+      --border: #1e3a5f;
+      --cyan: #00d4ff;
+      --cyan-dim: #0099cc;
+      --green: #00ff88;
+      --red: #ff3355;
+      --orange: #ff8800;
+      --yellow: #ffd700;
+      --text: #cdd5e0;
+      --muted: #6b7280;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 {
+      font-size: 1.15rem;
+      color: var(--cyan);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--green);
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      gap: 4px;
+      padding: 10px 28px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    nav button {
+      padding: 7px 18px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all .2s;
+    }
+    nav button.active, nav button:hover {
+      color: var(--cyan);
+      border-color: var(--border);
+      background: var(--surface2);
+    }
+
+    /* ── Main layout ── */
+    main { padding: 24px 28px; max-width: 1100px; margin: 0 auto; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Upload section ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 48px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--cyan);
+      background: rgba(0,212,255,0.04);
+    }
+    .upload-icon { font-size: 3rem; margin-bottom: 12px; }
+    .upload-zone p { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+    #fileInput { display: none; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 20px;
+      border-radius: var(--radius);
+      border: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .btn:disabled { opacity: .5; cursor: default; }
+    .btn-primary { background: var(--cyan); color: #000; font-weight: 600; }
+    .btn-danger  { background: rgba(255,51,85,.15); color: var(--red); border: 1px solid rgba(255,51,85,.3); }
+    .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+    /* ── Results ── */
+    #preview-wrap { margin-top: 20px; display: none; }
+    #preview-wrap img { width: 100%; border-radius: var(--radius); border: 1px solid var(--border); }
+
+    .detections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .detection-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .detection-card .person-id { font-size: 0.7rem; color: var(--muted); margin-bottom: 4px; }
+    .detection-card .activity-name {
+      font-size: 1rem; font-weight: 600; text-transform: capitalize;
+      margin-bottom: 8px;
+    }
+    .confidence-bar { height: 4px; border-radius: 2px; background: var(--surface2); overflow: hidden; }
+    .confidence-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+
+    .alert-banner {
+      display: none;
+      background: rgba(255,51,85,.12);
+      border: 1px solid rgba(255,51,85,.4);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      color: var(--red);
+      margin-top: 16px;
+      font-weight: 600;
+      animation: blink-border 1s infinite;
+    }
+    @keyframes blink-border { 0%,100%{border-color:rgba(255,51,85,.4)} 50%{border-color:rgba(255,51,85,.9)} }
+
+    /* ── Event log ── */
+    .toolbar {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px;
+    }
+    select {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 7px 12px;
+      font-size: 0.875rem;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th {
+      text-align: left;
+      padding: 10px 12px;
+      color: var(--muted);
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: .05em;
+    }
+    tbody tr { border-bottom: 1px solid rgba(30,58,95,.4); transition: background .15s; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 10px 12px; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    /* activity badge colors */
+    .badge-walking     { background: rgba(59,130,246,.2);  color:#60a5fa; }
+    .badge-sitting     { background: rgba(34,197,94,.2);   color:#4ade80; }
+    .badge-running     { background: rgba(234,179,8,.2);   color:#facc15; }
+    .badge-falling     { background: rgba(239,68,68,.2);   color:#f87171; }
+    .badge-using_phone { background: rgba(249,115,22,.2);  color:#fb923c; }
+    .badge-fighting    { background: rgba(220,38,38,.2);   color:#f87171; }
+
+    /* ── Stats ── */
+    .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+    .stat-card .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing:.05em; }
+    .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--cyan); margin-top: 4px; }
+
+    .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size:.875rem; }
+    .bar-label { width: 110px; text-transform:capitalize; }
+    .bar-wrap  { flex:1; height: 8px; background: var(--surface2); border-radius: 4px; overflow:hidden; }
+    .bar-fill  { height:100%; border-radius:4px; background: var(--cyan); }
+    .bar-count { width: 36px; text-align:right; color: var(--muted); font-size:.8rem; }
+
+    /* ── Spinner ── */
+    .spinner-wrap { display:none; justify-content:center; padding: 32px; }
+    .spinner {
+      width: 36px; height:36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .no-data { text-align:center; color:var(--muted); padding:40px; font-size:.9rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⬡ Smart Human Activity Recognition</h1>
+  <div class="status-badge">
+    <div class="status-dot"></div>
+    SYSTEM ONLINE — MediaPipe + PyTorch
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showPage('analyze', this)">Analyze</button>
+  <button onclick="showPage('events', this)">Event Log</button>
+  <button onclick="showPage('stats', this)">Statistics</button>
+</nav>
+
+<main>
+
+  <!-- ── ANALYZE PAGE ── -->
+  <div id="page-analyze" class="page active">
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon">📷</div>
+      <strong>Drag & drop an image or click to browse</strong>
+      <p>Supported: JPG · PNG · BMP · WebP · Max 20 MB</p>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(this)" />
+
+    <div style="margin-top:14px; display:flex; gap:10px;">
+      <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeImage()" disabled>
+        ▶ Analyze Activity
+      </button>
+    </div>
+
+    <div class="spinner-wrap" id="spinner"><div class="spinner"></div></div>
+
+    <div id="alert-banner" class="alert-banner">
+      ⚠ HIGH-RISK ACTIVITY DETECTED — Frame saved to event log
+    </div>
+
+    <div id="preview-wrap">
+      <img id="previewImg" src="" alt="Processed frame" />
+      <div class="detections-grid" id="detectionsGrid"></div>
+    </div>
+  </div>
+
+  <!-- ── EVENT LOG PAGE ── -->
+  <div id="page-events" class="page">
+    <div class="toolbar">
+      <select id="activityFilter" onchange="loadEvents()">
+        <option value="">All Activities</option>
+        <option value="walking">Walking</option>
+        <option value="sitting">Sitting</option>
+        <option value="running">Running</option>
+        <option value="falling">Falling</option>
+        <option value="using_phone">Using Phone</option>
+        <option value="fighting">Fighting</option>
+      </select>
+      <button class="btn btn-ghost" onclick="loadEvents()">⟳ Refresh</button>
+      <button class="btn btn-ghost" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-danger" onclick="clearEvents()">🗑 Clear Log</button>
+    </div>
+
+    <div class="spinner-wrap" id="events-spinner"><div class="spinner"></div></div>
+
+    <div id="events-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Activity</th>
+            <th>Confidence</th>
+            <th>Person</th>
+          </tr>
+        </thead>
+        <tbody id="eventsBody"></tbody>
+      </table>
+      <div class="no-data" id="events-empty" style="display:none">No events logged yet.</div>
+    </div>
+  </div>
+
+  <!-- ── STATS PAGE ── -->
+  <div id="page-stats" class="page">
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="label">Total Detections</div>
+        <div class="value" id="stat-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Special Events</div>
+        <div class="value" id="stat-special" style="color:var(--red)">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Activity Types</div>
+        <div class="value" id="stat-types">—</div>
+      </div>
+    </div>
+
+    <div class="spinner-wrap" id="stats-spinner"><div class="spinner"></div></div>
+
+    <div id="stats-breakdown"></div>
+  </div>
+
+</main>
+
+<script>
+  const BASE = window.location.origin;
+  let selectedFile = null;
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+
+  function showPage(name, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'events') loadEvents();
+    if (name === 'stats')  loadStats();
+  }
+
+  // ── File handling ─────────────────────────────────────────────────────────
+
+  const dropZone = document.getElementById('dropZone');
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) setFile(file);
+  });
+
+  function handleFileSelect(input) {
+    if (input.files[0]) setFile(input.files[0]);
+  }
+
+  function setFile(file) {
+    selectedFile = file;
+    document.getElementById('analyzeBtn').disabled = false;
+    dropZone.querySelector('strong').textContent = '📎 ' + file.name;
+  }
+
+  // ── Analysis ──────────────────────────────────────────────────────────────
+
+  async function analyzeImage() {
+    if (!selectedFile) return;
+
+    document.getElementById('spinner').style.display = 'flex';
+    document.getElementById('preview-wrap').style.display = 'none';
+    document.getElementById('alert-banner').style.display = 'none';
+    document.getElementById('analyzeBtn').disabled = true;
+
+    const form = new FormData();
+    form.append('file', selectedFile);
+
+    try {
+      const res = await fetch(BASE + '/analyze', { method: 'POST', body: form });
+      const data = await res.json();
+
+      document.getElementById('spinner').style.display = 'none';
+
+      if (!res.ok) {
+        alert('Error: ' + (data.message || 'Analysis failed'));
+        return;
+      }
+
+      // Show annotated image
+      document.getElementById('previewImg').src = data.processedImageUrl;
+      document.getElementById('preview-wrap').style.display = 'block';
+
+      // Render detection cards
+      const grid = document.getElementById('detectionsGrid');
+      grid.innerHTML = '';
+
+      if (data.detections.length === 0) {
+        grid.innerHTML = '<p style="color:var(--muted);margin-top:12px;">No persons detected in this image.</p>';
+      } else {
+        data.detections.forEach(d => {
+          const conf = Math.round(d.confidence * 100);
+          const color = activityColor(d.activity);
+          grid.innerHTML += `
+            <div class="detection-card">
+              <div class="person-id">PERSON ${d.personId}</div>
+              <div class="activity-name" style="color:${color}">${d.activity.replace('_', ' ')}</div>
+              <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px;">${conf}% confidence</div>
+              <div class="confidence-bar">
+                <div class="confidence-fill" style="width:${conf}%;background:${color}"></div>
+              </div>
+            </div>`;
+        });
+
+        // Alert for special activities
+        const hasSpecial = data.detections.some(d => ['falling','fighting'].includes(d.activity));
+        if (hasSpecial) document.getElementById('alert-banner').style.display = 'block';
+      }
+
+    } catch (err) {
+      document.getElementById('spinner').style.display = 'none';
+      alert('Network error: ' + err.message);
+    } finally {
+      document.getElementById('analyzeBtn').disabled = false;
+    }
+  }
+
+  // ── Events ────────────────────────────────────────────────────────────────
+
+  async function loadEvents() {
+    const filter = document.getElementById('activityFilter').value;
+    document.getElementById('events-spinner').style.display = 'flex';
+    document.getElementById('events-table-wrap').style.display = 'none';
+
+    try {
+      const url = BASE + '/events' + (filter ? '?activity=' + filter : '');
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const tbody = document.getElementById('eventsBody');
+      tbody.innerHTML = '';
+
+      if (!data.events || data.events.length === 0) {
+        document.getElementById('events-empty').style.display = 'block';
+      } else {
+        document.getElementById('events-empty').style.display = 'none';
+        data.events.forEach(e => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${new Date(e.timestamp).toLocaleString()}</td>
+              <td><span class="badge badge-${e.activity}">${e.activity.replace('_',' ')}</span></td>
+              <td>${(+e.confidence * 100).toFixed(1)}%</td>
+              <td>${e.person_id ?? '—'}</td>
+            </tr>`;
+        });
+      }
+    } catch(err) {
+      console.error(err);
+    } finally {
+      document.getElementById('events-spinner').style.display = 'none';
+      document.getElementById('events-table-wrap').style.display = 'block';
+    }
+  }
+
+  async function clearEvents() {
+    if (!confirm('Clear all logged events?')) return;
+    await fetch(BASE + '/events', { method: 'DELETE' });
+    loadEvents();
+  }
+
+  function exportCSV() {
+    window.open(BASE + '/events/export', '_blank');
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
+
+  async function loadStats() {
+    document.getElementById('stats-spinner').style.display = 'flex';
+    document.getElementById('stats-breakdown').innerHTML = '';
+
+    try {
+      const res = await fetch(BASE + '/stats');
+      const data = await res.json();
+
+      document.getElementById('stat-total').textContent = data.totalDetections;
+      document.getElementById('stat-special').textContent = data.specialEventsCount;
+      document.getElementById('stat-types').textContent = data.activityBreakdown.length;
+
+      const maxCount = Math.max(...data.activityBreakdown.map(b => b.count), 1);
+      let html = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">';
+      html += '<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:16px;">Activity Breakdown</div>';
+
+      if (data.activityBreakdown.length === 0) {
+        html += '<div class="no-data">No data yet — analyze some images first.</div>';
+      } else {
+        data.activityBreakdown.forEach(b => {
+          const pct = Math.round((b.count / maxCount) * 100);
+          html += `
+            <div class="bar-row">
+              <span class="bar-label">${b.activity.replace('_',' ')}</span>
+              <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${activityColor(b.activity)}"></div></div>
+              <span class="bar-count">${b.count}</span>
+              <span style="color:var(--muted);font-size:.8rem;width:50px">${(b.avgConfidence*100).toFixed(0)}% avg</span>
+            </div>`;
+        });
+      }
+      html += '</div>';
+      document.getElementById('stats-breakdown').innerHTML = html;
+    } catch(err) {
+      console.error(err);
+    } finally {
+      document.getElementById('stats-spinner').style.display = 'none';
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  function activityColor(activity) {
+    const map = {
+      walking: '#3b82f6', sitting: '#22c55e', running: '#eab308',
+      falling: '#ef4444', using_phone: '#f97316', fighting: '#dc2626',
+    };
+    return map[activity] || '#9ca3af';
+  }
+</script>
+</body>
+</html>

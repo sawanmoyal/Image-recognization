@@ -1,0 +1,11 @@
+opencv-python-headless==4.11.0.86
+mediapipe==0.10.21
+torch==2.10.0+cpu
+torchvision==0.25.0+cpu
+numpy==2.2.6
+matplotlib==3.10.3
+flask==3.1.1
+flask-cors==5.0.1
+pandas==2.2.3
+Pillow==11.2.1
+werkzeug==3.1.6
