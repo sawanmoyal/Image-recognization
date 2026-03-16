@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Titillium+Web:wght@300;400;600;700&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: 'Titillium Web', sans-serif;
+  --font-display: 'Chakra Petch', sans-serif;
+
+  --color-background: hsl(225 35% 6%);
+  --color-foreground: hsl(210 40% 98%);
+  
+  --color-card: hsl(225 35% 8%);
+  --color-card-foreground: hsl(210 40% 98%);
+  
+  --color-popover: hsl(225 35% 8%);
+  --color-popover-foreground: hsl(210 40% 98%);
+  
+  --color-primary: hsl(186 100% 50%); /* Bright Cyan */
+  --color-primary-foreground: hsl(225 35% 6%);
+  
+  --color-secondary: hsl(217 33% 17%);
+  --color-secondary-foreground: hsl(210 40% 98%);
+  
+  --color-muted: hsl(217 33% 15%);
+  --color-muted-foreground: hsl(215 20.2% 65.1%);
+  
+  --color-accent: hsl(186 100% 30%); /* Darker Cyan for accents */
+  --color-accent-foreground: hsl(210 40% 98%);
+  
+  --color-destructive: hsl(0 100% 55%); /* Bright Alert Red */
+  --color-destructive-foreground: hsl(210 40% 98%);
+  
+  --color-border: hsl(186 100% 20%); /* Cyan tinted border */
+  --color-input: hsl(217 33% 17%);
+  --color-ring: hsl(186 100% 50%);
+
+  --color-chart-1: hsl(186 100% 50%); /* Cyan */
+  --color-chart-2: hsl(280 80% 60%);  /* Purple */
+  --color-chart-3: hsl(140 80% 50%);  /* Green */
+  --color-chart-4: hsl(45 90% 50%);   /* Yellow */
+  --color-chart-5: hsl(0 90% 60%);    /* Red */
+
+  --radius-sm: 0.125rem; /* Sharper corners for sci-fi look */
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+}
+
+:root {
+  --background: 225 35% 6%;
+  --foreground: 210 40% 98%;
+  --card: 225 35% 8%;
+  --card-foreground: 210 40% 98%;
+  --popover: 225 35% 8%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 186 100% 50%;
+  --primary-foreground: 225 35% 6%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 33% 15%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 186 100% 30%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 100% 55%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 186 100% 20%;
+  --input: 217 33% 17%;
+  --ring: 186 100% 50%;
+  --radius: 0.25rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-image: 
+      linear-gradient(to right, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply tracking-wide uppercase font-semibold text-primary;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+  }
+}
+
+@layer utilities {
+  .sci-fi-panel {
+    @apply relative bg-card border border-border overflow-hidden;
+    box-shadow: 
+      inset 0 0 20px rgba(0, 229, 255, 0.05),
+      0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  }
+  
+  .sci-fi-panel::before {
+    content: '';
+    @apply absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-primary;
+  }
+  
+  .sci-fi-panel::after {
+    content: '';
+    @apply absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-primary;
+  }
+
+  .sci-fi-button {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+  
+  .sci-fi-button:hover {
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+  }
+  
+  .sci-fi-button::before {
+    content: '';
+    @apply absolute inset-0 bg-primary/20 transform -translate-x-full transition-transform duration-300 skew-x-12;
+  }
+  
+  .sci-fi-button:hover::before {
+    @apply translate-x-full;
+  }
+
+  .alert-pulse {
+    animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-red {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+      border-color: rgba(255, 0, 0, 1);
+    }
+    50% {
+      box-shadow: 0 0 20px 10px rgba(255, 0, 0, 0);
+      border-color: rgba(255, 0, 0, 0.4);
+    }
+  }
+
+  .scan-line {
+    @apply absolute left-0 right-0 h-1 bg-primary/50 blur-[2px];
+    animation: scan 3s linear infinite;
+  }
+
+  @keyframes scan {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+}

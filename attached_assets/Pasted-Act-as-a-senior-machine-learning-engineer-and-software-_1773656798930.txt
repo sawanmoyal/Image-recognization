@@ -1,0 +1,106 @@
+Act as a senior machine learning engineer and software architect.
+
+Your task is to generate a COMPLETE production-level AI Image Recognition project.
+
+Project Name:
+Smart Human Activity & Situation Recognition System
+
+Goal:
+Build a real-time computer vision system that detects humans from webcam video and recognizes their activities such as:
+
+- walking
+- sitting
+- running
+- falling
+- using phone
+- fighting
+
+Technology Stack:
+
+Python 3.10
+OpenCV
+PyTorch
+MediaPipe Pose
+NumPy
+Matplotlib
+Flask (for web interface)
+
+The system must be able to:
+1. Detect humans from webcam.
+2. Extract body pose keypoints using MediaPipe.
+3. Feed keypoints into a deep learning model.
+4. Classify human activity.
+5. Display activity prediction in real-time.
+6. Save detected events into logs.
+7. Provide a simple web dashboard to upload video or images.
+
+IMPORTANT:
+Generate a COMPLETE project with correct file structure, clean code, comments, and instructions.
+
+Project Folder Structure:
+
+smart-human-recognition/
+
+│
+├── dataset/
+│
+├── models/
+│
+├── src/
+│   ├── train_model.py
+│   ├── activity_detector.py
+│   ├── pose_extraction.py
+│
+├── webapp/
+│   ├── app.py
+│   ├── templates/
+│   │   └── index.html
+│
+├── utils/
+│   ├── helper.py
+│
+├── saved_events/
+│
+├── requirements.txt
+│
+├── README.md
+│
+└── run.py
+
+Requirements:
+
+1. The system must work with webcam input.
+2. Display bounding boxes and activity labels.
+3. Show prediction confidence.
+4. Save frames when special activities are detected.
+5. Log events into a CSV file.
+6. Code must be modular and well-commented.
+7. Avoid deprecated libraries.
+8. Use latest stable versions of libraries.
+
+requirements.txt must include:
+
+opencv-python
+mediapipe
+torch
+numpy
+matplotlib
+flask
+pandas
+
+Provide:
+
+1. Full source code for every file
+2. Installation instructions
+3. Commands to run project
+4. Dataset suggestions
+5. Explanation of each module
+
+Ensure:
+
+- Code runs without syntax errors
+- Proper imports
+- Compatible library versions
+- Clear instructions
+
+Return the entire project step by step file-by-file.

@@ -1,0 +1,17 @@
+packages:
+  "framer-motion": "For sci-fi scanning animations, page transitions, and alert pulsing effects"
+  "recharts": "For rendering activity breakdown and confidence statistics charts"
+  "react-dropzone": "For the drag-and-drop video/image upload area"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility function to efficiently merge Tailwind CSS classes"
+  "date-fns": "For formatting timestamps in the event log"
+
+images:
+  - path: "artifacts/activity-recognition/public/images/surveillance-bg.png"
+    description: "Abstract dark sci-fi surveillance interface background with subtle cyan grid lines and dark navy gradients, no text, clean futuristic tech aesthetic"
+    aspect_ratio: "16:9"
+
+notes:
+  - Assuming API client is available at @workspace/api-client-react
+  - Assuming the API returns fully formed URLs for processedImageUrl or relative paths that work with the standard setup
+  - Using dark mode by default to match the requested sci-fi surveillance aesthetic

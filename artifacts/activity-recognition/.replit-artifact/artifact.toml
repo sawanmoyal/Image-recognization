@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Smart Human Activity Recognition"
+version = "1.0.0"
+id = "artifacts/activity-recognition"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 24690
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/activity-recognition run dev"
+
+[services.env]
+PORT = "24690"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/activity-recognition", "run", "build"]
+publicDir = "artifacts/activity-recognition/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"

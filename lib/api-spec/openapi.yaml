@@ -1,15 +1,18 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Smart Human Activity Recognition API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: activity
+    description: Activity recognition operations
+  - name: events
+    description: Event log operations
 paths:
   /healthz:
     get:
@@ -24,6 +27,101 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /activity/analyze:
+    post:
+      operationId: analyzeActivity
+      tags: [activity]
+      summary: Analyze image or video frame for human activity
+      description: Accepts an image file and returns detected activities with confidence scores
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to analyze
+              required:
+                - file
+      responses:
+        "200":
+          description: Analysis results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityAnalysisResult"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List all detected events
+      description: Returns the log of all detected activity events
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+          description: Maximum number of events to return
+        - name: activity
+          in: query
+          schema:
+            type: string
+          description: Filter events by activity type
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventListResponse"
+    delete:
+      operationId: clearEvents
+      tags: [events]
+      summary: Clear all events
+      description: Deletes all logged events
+      responses:
+        "200":
+          description: Events cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /events/export:
+    get:
+      operationId: exportEvents
+      tags: [events]
+      summary: Export events as CSV
+      description: Returns all events as a CSV file download
+      responses:
+        "200":
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+  /stats:
+    get:
+      operationId: getStats
+      tags: [activity]
+      summary: Get activity statistics
+      description: Returns aggregate statistics about detected activities
+      responses:
+        "200":
+          description: Activity statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +131,134 @@ components:
           type: string
       required:
         - status
-
+    Detection:
+      type: object
+      properties:
+        activity:
+          type: string
+          description: Detected activity label
+        confidence:
+          type: number
+          description: Confidence score between 0 and 1
+        bbox:
+          type: object
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+          required: [x, y, width, height]
+          description: Bounding box of the detected person
+        personId:
+          type: integer
+          description: Unique ID for the detected person in this frame
+      required:
+        - activity
+        - confidence
+        - personId
+    ActivityAnalysisResult:
+      type: object
+      properties:
+        detections:
+          type: array
+          items:
+            $ref: "#/components/schemas/Detection"
+        processedImageUrl:
+          type: string
+          description: URL to the processed image with annotations
+        frameTimestamp:
+          type: string
+          description: ISO timestamp when the frame was processed
+        eventsSaved:
+          type: integer
+          description: Number of special events saved to log
+      required:
+        - detections
+        - frameTimestamp
+        - eventsSaved
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        activity:
+          type: string
+        confidence:
+          type: number
+        timestamp:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        personId:
+          type: integer
+      required:
+        - id
+        - activity
+        - confidence
+        - timestamp
+        - personId
+    EventListResponse:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/Event"
+        total:
+          type: integer
+      required:
+        - events
+        - total
+    ActivityStat:
+      type: object
+      properties:
+        activity:
+          type: string
+        count:
+          type: integer
+        avgConfidence:
+          type: number
+      required:
+        - activity
+        - count
+        - avgConfidence
+    StatsResponse:
+      type: object
+      properties:
+        totalDetections:
+          type: integer
+        activityBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityStat"
+        specialEventsCount:
+          type: integer
+      required:
+        - totalDetections
+        - activityBreakdown
+        - specialEventsCount
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+        - message
