@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import AnalyzePage from "@/pages/analyze";
 import EventsPage from "@/pages/events";
 import StatsPage from "@/pages/stats";
+import WebcamPage from "@/pages/webcam";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -20,6 +21,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={AnalyzePage} />
+      <Route path="/webcam" component={WebcamPage} />
       <Route path="/events" component={EventsPage} />
       <Route path="/stats" component={StatsPage} />
       <Route component={NotFound} />
